@@ -116,7 +116,6 @@ public class myID3 extends AbstractClassifier {
             attributeEntropy += p * computeEntropy(splitData[i]);
         }
         
-        splitData = null;
         return attributeEntropy;
     }
     
