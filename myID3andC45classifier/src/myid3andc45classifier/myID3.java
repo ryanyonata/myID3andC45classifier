@@ -33,9 +33,10 @@ public class myID3 extends AbstractClassifier {
         data.deleteWithMissingClass();
         
         //Buat pohon
-        makeMyTree(data);
+        makeMyID3Tree(data);
     }
     
+    @Override
     public double classifyInstance(Instance instance) throws NoSupportForMissingValuesException {
         
         //Periksa apakah instance memiliki missing value
@@ -51,11 +52,11 @@ public class myID3 extends AbstractClassifier {
   
     }
     
-    public void makeMyTree(Instances data) throws Exception {
+    public void makeMyID3Tree(Instances data) throws Exception {
         
     }
     
-    public double computeEntropy(Instances data) throws Exception {
+    public double[] listClassCountsValues(Instances data) throws Exception {
         
         double[] classCounts = new double[data.numClasses()]; //array untuk menyimpan value kelas sesuai jumlah kelas
         Enumeration instanceEnum = data.enumerateInstances();
@@ -66,19 +67,62 @@ public class myID3 extends AbstractClassifier {
             classCounts[(int)inst.classValue()]++;
         }
         
+        return classCounts;
+    }
+    
+    public double computeEntropy(Instances data) throws Exception {
+        
         double entropy = 0;
+        
+        double[] classCounts = listClassCountsValues(data);
         for (int i = 0; i < data.numClasses(); i++) {
             if (classCounts[i] > 0) {
-                entropy -=  (double)(classCounts[i]/data.numInstances()) * (Utils.log2(classCounts[i])/data.numInstances());
+                double p = classCounts[i]/(double)data.numInstances(); 
+                entropy -=  p * (Utils.log2(p));
             }
         }
         
         return entropy;
-    
     }
     
-    public double computeInfoGain(Instances data, Attribute attr) {
-        return 0;
+    public Instances[] splitData(Instances data, Attribute attr) throws Exception {
+        //Split data menjadi beberapa instances sesuai dengan jumlah jenis data pada atribut
+        Instances[] splitData = new Instances[attr.numValues()];
+        
+        //
+        for (int i = 0; i < attr. numValues(); i++) {
+            splitData[i] = new Instances(data, data.numInstances());
+        }
+        
+        Enumeration instanceEnum = data.enumerateInstances();
+        while(instanceEnum.hasMoreElements()) {
+            Instance inst = (Instance) instanceEnum.nextElement();
+            splitData[(int) inst.value(attr)].add(inst);
+        }
+        
+        for (int i = 0; i < splitData.length; i++) {
+            splitData[i].compactify();
+        }
+        
+        return splitData;
     }
     
+    public double computeAttributeEntropy(Instances data, Attribute attr) throws Exception {
+        double attributeEntropy = 0;
+        
+        Instances[] splitData = splitData(data, attr);
+        for (int i = 0; i < splitData.length; i++) {
+            double p = splitData[i].numInstances()/(double)data.numInstances();
+            attributeEntropy += p * computeEntropy(splitData[i]);
+        }
+        
+        splitData = null;
+        return attributeEntropy;
+    }
+    
+    public double computeInfoGain(Instances data, Attribute attr) throws Exception {
+        
+        return computeEntropy(data) - computeAttributeEntropy(data, attr);
+        
+    }
 }
