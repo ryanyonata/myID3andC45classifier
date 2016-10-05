@@ -145,6 +145,7 @@ public class MainController implements Initializable {
                         tab_classify.setDisable(false);
                         System.out.println(trainset);
                         System.out.println(trainset.numAttributes());
+                        preprocessRows.clear();
                         for (int i=0; i < trainset.numAttributes(); i++){
                             preprocessRows.add(new PreprocessRow(i+1,trainset.attribute(i).name()));
                         }
@@ -219,6 +220,7 @@ public class MainController implements Initializable {
             public void handle(ActionEvent event) {
                 try {
                     trainset = accessor.resample(trainset);
+                    System.out.println(trainset);
                 } catch (Exception e){
                     e.printStackTrace();
                 }

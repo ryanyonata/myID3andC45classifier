@@ -57,6 +57,7 @@
                   <Button id="button_testArff" fx:id="button_selectTestArff" layoutX="150.0" layoutY="137.0" mnemonicParsing="false" text="Select" />
                   <Label layoutX="226.0" layoutY="141.0" text="Model:" />
                   <Label id="label_isModel" fx:id="label_isModel" layoutX="275.0" layoutY="141.0" text="No Model" />
+                  <Label layoutX="198.0" layoutY="97.0" text="\%" />
                </children></AnchorPane>
       </content>
     </Tab>
