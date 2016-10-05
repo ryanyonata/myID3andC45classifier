@@ -22,7 +22,7 @@
                     <columns>
                       <TableColumn id="datasetTable_numbers" fx:id="table_preprocessNumbers" prefWidth="63.0" text="No" />
                       <TableColumn id="datasetTable_checkboxes" fx:id="table_preprocessCheckboxes" prefWidth="62.0" />
-                        <TableColumn id="datasetTable_attributes" fx:id="table_preprocessAttributes" prefWidth="191.0" text="Attribute" />
+                        <TableColumn id="datasetTable_attributes" fx:id="table_preprocessAttributes" prefWidth="196.0" text="Attribute" />
                     </columns>
                   </TableView>
                   <Button id="btn_removeAttr" fx:id="btn_removeAttribute" layoutX="28.0" layoutY="318.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="253.0" text="Remove" />

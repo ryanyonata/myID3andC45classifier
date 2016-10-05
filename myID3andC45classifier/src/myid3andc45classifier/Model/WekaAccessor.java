@@ -26,7 +26,7 @@ public class WekaAccessor {
         return instances;
     }
 
-    public void removeAttr(Instances dataset, int attr_number) throws Exception {
+    public Instances removeAttr(Instances dataset, int attr_number) throws Exception {
         String[] options = new String[2];
         options[0] = "-R";                                    // "range"
         options[1] = Integer.toString(attr_number);           // the attribute index
@@ -34,6 +34,7 @@ public class WekaAccessor {
         remove.setOptions(options);                           // set options
         remove.setInputFormat(dataset);                          // inform filter about dataset **AFTER** setting options
         dataset = Filter.useFilter(dataset, remove);   // apply filter
+        return dataset;
     }
 
     public Instances resample(Instances dataset) throws Exception {
