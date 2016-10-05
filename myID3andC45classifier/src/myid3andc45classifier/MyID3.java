@@ -24,6 +24,7 @@ public class MyID3 extends Classifier {
     private Attribute attribute;
     private double label;
     private Attribute classAttribute;
+    private double classValue;
     private static final double epsilon = 1e-6;
     
     //Methods
@@ -89,7 +90,12 @@ public class MyID3 extends Classifier {
     
     public void makeMyID3Tree(Instances data) throws Exception {
         
-        
+        // Mengecek apakah tidak terdapat instance yang dalam node ini
+        if (data.numInstances() == 0) {
+            attribute = null;
+            classValue = Instance.missingValue();
+            return;
+         }
         
         // Compute attribute with maximum information gain.
         double[] infoGains = new double[data.numAttributes()];
@@ -187,6 +193,8 @@ public class MyID3 extends Classifier {
             double p = splitData[i].numInstances()/(double)data.numInstances();
             attributeEntropy += p * computeEntropy(splitData[i]);
         }
+        
+        splitData = null;
         
         return attributeEntropy;
     }

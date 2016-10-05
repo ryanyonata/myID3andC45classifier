@@ -31,7 +31,7 @@ import weka.filters.unsupervised.attribute.Remove;
  *
  * @author ryanyonata
  */
-public class main {
+public class Main {
     
     public Instances dataset;
     public Instances testset;
@@ -43,7 +43,7 @@ public class main {
         // TODO code application logic here
         WekaAccessor accessor = new WekaAccessor();
         Instances trainset;
-        trainset = accessor.readARFF("D:\\weather.nominal.arff");
+        trainset = accessor.readARFF("D:\\Semester VII\\ML\\myID3andC45classifier\\myID3andC45classifier\\resources\\iris.arff");
         Classifier j48 = new J48();
         Classifier model = accessor.train(trainset, j48);
         //accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");

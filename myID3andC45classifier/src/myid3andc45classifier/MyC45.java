@@ -21,7 +21,7 @@ import weka.core.Utils;
 public class MyC45 extends Classifier {
 
     
-    private myC45[] successors; 
+    private MyC45[] successors; 
     private Attribute attribute;
     private double classValue;
     private double[] distribution;
