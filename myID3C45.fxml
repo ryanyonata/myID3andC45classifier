@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="388.0" tabClosingPolicy="UNAVAILABLE" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.65">
+  <tabs>
+    <Tab text="Preprocess">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="397.0">
+               <children>
+                  <TableView id="datasetTable" layoutX="28.0" layoutY="77.0" prefHeight="241.0" prefWidth="322.0">
+                    <columns>
+                      <TableColumn id="datasetTable_numbers" prefWidth="63.0" text="No" />
+                      <TableColumn id="datasetTable_checkboxes" prefWidth="40.0" />
+                        <TableColumn id="datasetTable_attributes" prefWidth="122.0" text="Attribute" />
+                    </columns>
+                  </TableView>
+                  <Button id="btn_removeAttr" layoutX="28.0" layoutY="318.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="253.0" text="Remove" />
+                  <Button id="btn_loadArff" layoutX="297.0" layoutY="27.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="50.0" text="Load" />
+                  <Button id="btn_browseArff" layoutX="222.0" layoutY="27.0" mnemonicParsing="false" text="Browse.." />
+                  <TextField id="tfield_arffPath" layoutX="33.0" layoutY="27.0" prefHeight="25.0" prefWidth="177.0" />
+                  <Button id="btn_resample" layoutX="281.0" layoutY="318.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Resample" />
+               </children></AnchorPane>
+      </content>
+    </Tab>
+    <Tab text="Classify">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <RadioButton layoutX="34.0" layoutY="34.0" mnemonicParsing="false" text="ID3 Weka" />
+                  <RadioButton layoutX="34.0" layoutY="51.0" mnemonicParsing="false" text="C4.5 Weka (J48)" />
+                  <RadioButton layoutX="194.0" layoutY="34.0" mnemonicParsing="false" text="ID3 Homemade" />
+                  <RadioButton layoutX="192.0" layoutY="51.0" mnemonicParsing="false" text="C4.5 Homemade" />
+                  <Button layoutX="204.0" layoutY="318.0" mnemonicParsing="false" text="Train" />
+                  <Button layoutX="28.0" layoutY="318.0" mnemonicParsing="false" text="Save Model" />
+                  <Button layoutX="114.0" layoutY="318.0" mnemonicParsing="false" text="Load Model" />
+                  <TextField layoutX="154.0" layoutY="93.0" prefHeight="25.0" prefWidth="40.0" />
+                  <RadioButton layoutX="34.0" layoutY="97.0" mnemonicParsing="false" text="Percentage Split" />
+                  <RadioButton layoutX="34.0" layoutY="118.0" mnemonicParsing="false" text="10 Fold Cross Validation" />
+                  <RadioButton layoutX="34.0" layoutY="141.0" mnemonicParsing="false" text="Test Set" />
+               </children></AnchorPane>
+      </content>
+    </Tab>
+  </tabs>
+</TabPane>

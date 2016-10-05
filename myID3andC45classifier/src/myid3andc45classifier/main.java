@@ -6,8 +6,15 @@
 
 package myid3andc45classifier;
 
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
+import weka.classifiers.trees.J48;
 import weka.core.Instances;
 import java.io.BufferedReader;
+import java.io.Console;
+import java.io.FileReader;
+import java.util.Random;
+import java.util.Scanner;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.ObjectOutputStream;
@@ -33,90 +40,29 @@ public class main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        // TODO code application logic here 
-        String filepath = "D://weather.nominal.arff";
-        Instances i = new Instances(readARFF(filepath));
-        
-        myID3 myTree = new myID3();
-        myTree.buildClassifier(i);
-        
-        Evaluation eval = new Evaluation(i);
-        eval.crossValidateModel(myTree, i, 10, new Random(1));
-        
-        System.out.print(eval.toSummaryString());
+        // TODO code application logic here
+        WekaAccessor accessor = new WekaAccessor();
+        Instances trainset;
+        trainset = accessor.readARFF("D:\\weather.nominal.arff");
+        Classifier j48 = new J48();
+        Classifier model = accessor.train(trainset, j48);
+        //accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
+        //Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
+        System.out.println(model);
+        //System.out.println(loadedModel);
 
-    }
+        // Coba ID3 Apoy
+        Classifier customID3 = new MyID3();
+        Classifier myId3Model = accessor.train(trainset, customID3);
+        System.out.println(myId3Model);
+        System.out.println(accessor.tenFoldCrossValidation(trainset, customID3).toSummaryString());
+        Evaluation eval = new Evaluation(trainset);
+        eval.evaluateModel(myId3Model, trainset);
+        System.out.println(eval.toSummaryString());
 
-    public static Instances readARFF(String filepath) throws Exception {
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource(filepath);
-        Instances instances = source.getDataSet();
-        // setting class attribute if the data format does not provide this information
-        // For example, the XRFF format saves the class attribute information as well
-        if (instances.classIndex() == -1)
-            instances.setClassIndex(instances.numAttributes() - 1);
-        return instances;
-    }
-
-    public void removeAttr(int attr_number) throws Exception {
-        String[] options = new String[2];
-        options[0] = "-R";                                    // "range"
-        options[1] = Integer.toString(attr_number);           // the attribute index
-        Remove remove = new Remove();                         // new instance of filter
-        remove.setOptions(options);                           // set options
-        remove.setInputFormat(dataset);                          // inform filter about dataset **AFTER** setting options
-        dataset = Filter.useFilter(dataset, remove);   // apply filter
-    }
-
-    public void resample() throws Exception {
-        weka.filters.unsupervised.instance.Resample sampler = new weka.filters.unsupervised.instance.Resample();
-        sampler.setRandomSeed((int)System.currentTimeMillis());
-        sampler.setInputFormat(dataset);
-        dataset = Filter.useFilter(dataset,sampler);
-    }
-
-    public Classifier train(Classifier cls) throws Exception {
-        // train
-        cls.buildClassifier(dataset);
-        return cls;
-    }
-    public void saveModel(Classifier cls) throws Exception {
-
-        // serialize model
-        ObjectOutputStream oos = new ObjectOutputStream(
-                new FileOutputStream("/model/some.model"));
-        oos.writeObject(cls);
-        oos.flush();
-        oos.close();
-    }
-
-    public Classifier loadModel(String filepath) throws Exception {
-        return (Classifier) weka.core.SerializationHelper.read(filepath);
-    }
-
-    public Evaluation tenFoldCrossValidation(Classifier cls) throws Exception {
-        Evaluation eval = new Evaluation(dataset);
-        eval.crossValidateModel(cls, dataset, 10, new Random((int)System.currentTimeMillis()));
-        return eval;
-    }
-
-    public Evaluation percentageSplit(Classifier cls, double percentage) throws Exception {
-        Instances instances = new Instances(dataset);
-        instances.randomize(new Random((int)System.currentTimeMillis()));
-
-        int trainSize = (int) Math.round(instances.numInstances() * percentage / 100);
-        int testSize = instances.numInstances() - trainSize;
-        Instances train = new Instances(instances, 0, trainSize);
-        Instances test = new Instances(instances, trainSize, testSize);
-
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(cls, test);
-
-        return eval;
-    }
-
-    public String classifyFromModel(Classifier cls, Instance input_instance) throws Exception {
-        double label = cls.classifyInstance(input_instance);
-        input_instance.setClassValue(label);
-        return input_instance.stringValue(input_instance.numAttributes()-1);
+        // Coba C4.5 Bayu
+//        Classifier customC45 = new myC45();
+//        Classifier myC45Model = accessor.train(trainset, customC45);
+//        System.out.println(myC45Model);
     }
 }

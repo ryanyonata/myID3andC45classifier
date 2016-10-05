@@ -18,7 +18,7 @@ import weka.core.Utils;
  *
  * @author ryanyonata
  */
-public class myC45 extends Classifier {
+public class MyC45 extends Classifier {
 
     
     private myC45[] successors; 
