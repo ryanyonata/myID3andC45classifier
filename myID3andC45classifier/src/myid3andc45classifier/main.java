@@ -50,5 +50,15 @@ public class main {
         Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
         System.out.println(model);
         System.out.println(loadedModel);
+
+        // Coba ID3 Apoy
+        Classifier customID3 = new myID3();
+        Classifier myId3Model = accessor.train(trainset, customID3);
+        System.out.println(myId3Model);
+
+        // Coba C4.5 Bayu
+//        Classifier customC45 = new myC45();
+//        Classifier myC45Model = accessor.train(trainset, customC45);
+//        System.out.println(myC45Model);
     }
 }
