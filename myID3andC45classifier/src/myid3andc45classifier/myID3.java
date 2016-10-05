@@ -31,11 +31,24 @@ public class myID3 extends Classifier {
 
     @Override
     public void buildClassifier(Instances data) throws Exception {        
-        //Hapus data yang tidak ada kelasnya
+        if (!data.classAttribute().isNominal()) {
+            throw new Exception("Id3: nominal class, please.");
+        }
+        Enumeration enumAtt = data.enumerateAttributes();
+        while (enumAtt.hasMoreElements()) {
+            Attribute attr = (Attribute) enumAtt.nextElement();
+            if (!attr.isNominal()) {
+                throw new Exception("Id3: only nominal attributes, please.");
+            }
+            Enumeration enumInstance = data.enumerateInstances();
+            while (enumInstance.hasMoreElements()) {
+                if (((Instance) enumInstance.nextElement()).isMissing(attr)) {
+                    throw new Exception("Id3: no missing values, please.");
+                }
+            }
+        }
         data = new Instances(data);
-        data.deleteWithMissingClass();
-        
-        //Buat pohon
+        data.deleteWithMissingClass(); 
         makeMyID3Tree(data);
     }
     
