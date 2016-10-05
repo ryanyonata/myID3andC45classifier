@@ -24,7 +24,7 @@ public class MyID3 extends Classifier {
     private Attribute attribute;
     private double label;
     private Attribute classAttribute;
-    
+    private static final double epsilon = 1e-6;
     
     //Methods
 
@@ -67,6 +67,27 @@ public class MyID3 extends Classifier {
   
     }
     
+    private boolean isDoubleEqual(double a, double b) {
+        return (a == b) || Math.abs(a-b) < epsilon;
+    }
+    
+    private int maxIndex(double[] array) {
+        double max = 0;
+        int index = 0;
+
+        if (array.length > 0) {
+            for (int i = 0; i < array.length; ++i) {
+                if (array[i] > max) {
+                    max = array[i];
+                    index = i;
+                }
+            }
+            return index;
+        } else {
+            return -1;
+        }
+    }
+    
     public void makeMyID3Tree(Instances data) throws Exception {
         
         // Compute attribute with maximum information gain.
@@ -77,11 +98,11 @@ public class MyID3 extends Classifier {
             infoGains[att.index()] = computeInfoGain(data, att);
         }
     
-        attribute = data.attribute(Utils.maxIndex(infoGains));
+        attribute = data.attribute(maxIndex(infoGains));
 
         // Make leaf if information gain is zero. 
         // Otherwise create successors.
-        if (Utils.eq(infoGains[attribute.index()], 0)) {
+        if (isDoubleEqual(infoGains[attribute.index()], 0)) {
             attribute = null;
             double[] numClasses = new double[data.numClasses()];
             
@@ -91,7 +112,7 @@ public class MyID3 extends Classifier {
                 numClasses[(int) inst.classValue()]++;
             }
 
-            label = Utils.maxIndex(numClasses);
+            label = maxIndex(numClasses);
             classAttribute = data.classAttribute();
         } else {
             Instances[] splitData = splitInstancesByAttribute(data, attribute);
