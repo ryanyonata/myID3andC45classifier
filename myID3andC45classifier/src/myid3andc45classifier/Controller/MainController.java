@@ -217,6 +217,16 @@ public class MainController implements Initializable {
                 }
             }
         });
+        btn_resample.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    trainset = accessor.resample(trainset);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 }
