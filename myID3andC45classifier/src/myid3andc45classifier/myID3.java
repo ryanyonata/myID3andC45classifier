@@ -69,23 +69,15 @@ public class myID3 extends Classifier {
     }
     
     public void makeMyID3Tree(Instances data) throws Exception {
-        // Check if no instances have reached this node.
-        if (data.numInstances() == 0) {
-            attribute = null;
-            classValue = Instance.missingValue();
-            distribution = new double[data.numClasses()];
-            return;
-        }
         
         // Compute attribute with maximum information gain.
         double[] infoGains = new double[data.numAttributes()];
-        int numAttributes = data.numAttributes();
-        Attribute[] attributes = null;
-        
-        for (int i = 0; i < numAttributes; i++) {
-            Attribute att = (Attribute) attributes[i];
+        Enumeration attEnum = data.enumerateAttributes();
+        while (attEnum.hasMoreElements()) {
+            Attribute att = (Attribute) attEnum.nextElement();
             infoGains[att.index()] = computeInfoGain(data, att);
         }
+    
         attribute = data.attribute(Utils.maxIndex(infoGains));
 
         // Make leaf if information gain is zero. 
@@ -94,9 +86,9 @@ public class myID3 extends Classifier {
             attribute = null;
             distribution = new double[data.numClasses()];
             
-            Instance[] listInstances = null;
-            for (int i = 0; i < numAttributes; i++) {
-                Instance inst = (Instance) listInstances[i];
+            Enumeration instEnum = data.enumerateInstances();
+            while (instEnum.hasMoreElements()) {
+                Instance inst = (Instance) instEnum.nextElement();
                 distribution[(int) inst.classValue()]++;
             }
 

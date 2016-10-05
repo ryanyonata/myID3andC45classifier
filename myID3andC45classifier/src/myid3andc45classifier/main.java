@@ -34,15 +34,17 @@ public class main {
      */
     public static void main(String[] args) throws Exception {
         // TODO code application logic here 
-        String filepath = "weather.nominal.arff";
+        String filepath = "D://weather.nominal.arff";
         Instances i = new Instances(readARFF(filepath));
         
         myID3 myTree = new myID3();
         myTree.buildClassifier(i);
         
         Evaluation eval = new Evaluation(i);
-        eval.evaluateModel(myTree, i);
+        eval.crossValidateModel(myTree, i, 10, new Random(1));
         
+        System.out.print(eval.toSummaryString());
+
     }
 
     public static Instances readARFF(String filepath) throws Exception {
