@@ -15,13 +15,26 @@ import java.io.Console;
 import java.io.FileReader;
 import java.util.Random;
 import java.util.Scanner;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.ObjectOutputStream;
+import java.util.Random;
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
+import weka.core.Instance;
+import weka.core.converters.ConverterUtils;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
 
 /**
  *
  * @author ryanyonata
  */
 public class main {
+    
+    public Instances dataset;
+    public Instances testset;
 
     /**
      * @param args the command line arguments
@@ -37,17 +50,5 @@ public class main {
         Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
         System.out.println(model);
         System.out.println(loadedModel);
-        
     }
-    
-    public void readARFF(String filepath) throws Exception {
-        DataSource source = new DataSource("weather.nominal.arff");
-        Instances data = source.getDataSet();
-        // setting class attribute if the data format does not provide this information
-        // For example, the XRFF format saves the class attribute information as well
-        if (data.classIndex() == -1)
-          data.setClassIndex(data.numAttributes() - 1);
-    }
-    
-    
 }

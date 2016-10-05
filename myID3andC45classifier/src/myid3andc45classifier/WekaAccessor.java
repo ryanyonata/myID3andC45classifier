@@ -96,4 +96,5 @@ public class WekaAccessor {
         input_instance.setClassValue(label);
         return input_instance.stringValue(input_instance.numAttributes()-1);
     }
+    
 }
