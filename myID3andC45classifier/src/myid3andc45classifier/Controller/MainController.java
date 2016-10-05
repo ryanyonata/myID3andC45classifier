@@ -43,9 +43,6 @@ public class MainController implements Initializable {
     private Button btn_removeAttribute;
 
     @FXML
-    private Button btn_loadArff;
-
-    @FXML
     private Button btn_browseArff;
 
     @FXML

@@ -93,9 +93,9 @@ public class MyC45 extends Classifier {
             classAttribute = data.classAttribute();
         } else {
             Instances[] splitData = splitInstancesByAttribute(data, attribute);
-            successors = new MyID3[attribute.numValues()];
+            successors = new MyC45[attribute.numValues()];
             for (int j = 0; j < attribute.numValues(); j++) {
-                successors[j] = new MyID3();
+                successors[j] = new MyC45();
                 successors[j].buildClassifier(splitData[j]);
             }
         }
