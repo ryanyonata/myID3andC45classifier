@@ -43,16 +43,16 @@ public class main {
         // TODO code application logic here
         WekaAccessor accessor = new WekaAccessor();
         Instances trainset;
-        trainset = accessor.readARFF("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\resources\\weather.nominal.arff");
+        trainset = accessor.readARFF("D:\\weather.nominal.arff");
         Classifier j48 = new J48();
         Classifier model = accessor.train(trainset, j48);
-        accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
-        Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
+        //accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
+        //Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
         System.out.println(model);
-        System.out.println(loadedModel);
+        //System.out.println(loadedModel);
 
         // Coba ID3 Apoy
-        Classifier customID3 = new myID3();
+        Classifier customID3 = new MyID3();
         Classifier myId3Model = accessor.train(trainset, customID3);
         System.out.println(myId3Model);
         System.out.println(accessor.tenFoldCrossValidation(trainset, customID3).toSummaryString());

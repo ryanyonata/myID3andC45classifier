@@ -12,7 +12,7 @@ import weka.core.Instances;
  *
  * @author ryanyonata
  */
-public class myC45 extends Classifier {
+public class MyC45 extends Classifier {
 
     @Override
     public void buildClassifier(Instances data) throws Exception {
