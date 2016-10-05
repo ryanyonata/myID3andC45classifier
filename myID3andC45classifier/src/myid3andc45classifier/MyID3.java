@@ -27,7 +27,6 @@ public class MyID3 extends Classifier {
     private static final double epsilon = 1e-6;
     
     //Methods
-
     @Override
     public void buildClassifier(Instances data) throws Exception {        
         if (!data.classAttribute().isNominal()) {
@@ -90,6 +89,8 @@ public class MyID3 extends Classifier {
     
     public void makeMyID3Tree(Instances data) throws Exception {
         
+        
+        
         // Compute attribute with maximum information gain.
         double[] infoGains = new double[data.numAttributes()];
         Enumeration attEnum = data.enumerateAttributes();
@@ -138,6 +139,10 @@ public class MyID3 extends Classifier {
         return classCounts;
     }
     
+    private double log2(double num) {
+        return (num == 0) ? 0 : Math.log(num) / Math.log(2);
+    }
+    
     public double computeEntropy(Instances data) throws Exception {
         
         double entropy = 0;
@@ -146,7 +151,7 @@ public class MyID3 extends Classifier {
         for (int i = 0; i < data.numClasses(); i++) {
             if (classCounts[i] > 0) {
                 double p = classCounts[i]/(double)data.numInstances(); 
-                entropy -=  p * (Utils.log2(p));
+                entropy -=  p * (log2(p));
             }
         }
         
@@ -191,6 +196,8 @@ public class MyID3 extends Classifier {
         return computeEntropy(data) - computeAttributeEntropy(data, attr);
         
     }
+    
+    
     
     public String toString(int level) {
         
