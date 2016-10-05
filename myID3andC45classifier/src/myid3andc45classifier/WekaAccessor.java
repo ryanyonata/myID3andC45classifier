@@ -1,53 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package myid3andc45classifier;
 
-import weka.core.Instances;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.ObjectOutputStream;
-import java.util.Random;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instance;
+import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
-import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.Random;
+
 /**
- *
- * @author ryanyonata
+ * Created by Julio Savigny on 10/5/2016.
  */
-public class main {
-    
+public class WekaAccessor {
+
     public Instances dataset;
     public Instances testset;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws Exception {
-        // TODO code application logic here 
-        String filepath = "D://weather.nominal.arff";
-        Instances i = new Instances(readARFF(filepath));
-        
-        myID3 myTree = new myID3();
-        myTree.buildClassifier(i);
-        
-        Evaluation eval = new Evaluation(i);
-        eval.crossValidateModel(myTree, i, 10, new Random(1));
-        
-        System.out.print(eval.toSummaryString());
-
-    }
-
-    public static Instances readARFF(String filepath) throws Exception {
+    public Instances readARFF(String filepath) throws Exception {
         ConverterUtils.DataSource source = new ConverterUtils.DataSource(filepath);
         Instances instances = source.getDataSet();
         // setting class attribute if the data format does not provide this information
@@ -119,4 +92,5 @@ public class main {
         input_instance.setClassValue(label);
         return input_instance.stringValue(input_instance.numAttributes()-1);
     }
+    
 }
