@@ -5,6 +5,7 @@
  */
 package myid3andc45classifier.Model;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
@@ -13,6 +14,8 @@ import weka.core.Capabilities.Capability;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Add;
 
 /**
  *
@@ -23,24 +26,42 @@ public class MyC45 extends Classifier {
     
     private MyC45[] successors; 
     private Attribute attribute;
-    private double classValue;
+    private double label;
     private double[] distribution;
     private Attribute classAttribute;
+    private static final double epsilon = 1e-6;
     
     @Override
     public void buildClassifier(Instances data) throws Exception {
         getCapabilities().testWithFail(data);
         
+        data = new Instances(data);
+        data.deleteWithMissingClass();
+        
         Enumeration enumAtt = data.enumerateAttributes();
         while (enumAtt.hasMoreElements()) {
             Attribute attr = (Attribute) enumAtt.nextElement();
-            if (!attr.isNominal()) {
+            if (attr.isNumeric()) {
+                ArrayList<Double> mid = new ArrayList<Double>();
+                Instances savedData = null;
+                double temp, max = Double.NEGATIVE_INFINITY;
                 // TODO: split nominal
+                data.sort(attr);
+                for (int i = 0; i < data.numInstances()-1; i++) {
+                    if (data.instance(i).classValue() != data.instance(i+1).classValue()) {
+                        Instances newData = convertInstances(data, attr, (data.instance(i+1).value(attr)-data.instance(i).value(attr))/2);
+                        temp = computeInfoGainRatio(newData, newData.attribute(newData.numAttributes()-1));
+                        if (temp > max) {
+                            max = temp;
+                            savedData = newData;
+                        }
+                    }
+                }
+                
+                data = savedData;
             }
         }
         
-        data = new Instances(data);
-        data.deleteWithMissingClass();
         
     }
     
@@ -54,7 +75,30 @@ public class MyC45 extends Classifier {
         }
         
         // TODO: build the tree
-        
+        attribute = data.attribute(maxIndex(infoGainRatios));
+
+        // Make leaf if information gain is zero. 
+        // Otherwise create successors.
+        if (isDoubleEqual(infoGainRatios[attribute.index()], 0)) {
+            attribute = null;
+            double[] numClasses = new double[data.numClasses()];
+            
+            Enumeration instEnum = data.enumerateInstances();
+            while (instEnum.hasMoreElements()) {
+                Instance inst = (Instance) instEnum.nextElement();
+                numClasses[(int) inst.classValue()]++;
+            }
+
+            label = maxIndex(numClasses);
+            classAttribute = data.classAttribute();
+        } else {
+            Instances[] splitData = splitInstancesByAttribute(data, attribute);
+            successors = new MyID3[attribute.numValues()];
+            for (int j = 0; j < attribute.numValues(); j++) {
+                successors[j] = new MyID3();
+                successors[j].buildClassifier(splitData[j]);
+            }
+        }
         // TODO: prune
     }
     
@@ -87,7 +131,7 @@ public class MyC45 extends Classifier {
         return entropy;
     }
     
-    public Instances[] splitData(Instances data, Attribute attr) throws Exception {
+    public Instances[] splitInstancesByAttribute(Instances data, Attribute attr) throws Exception {
         //Split data menjadi beberapa instances sesuai dengan jumlah jenis data pada atribut
         Instances[] splitData = new Instances[attr.numValues()];
         
@@ -112,7 +156,7 @@ public class MyC45 extends Classifier {
         double attributeEntropy = 0;
         double attributeSplitInfo = 0;
         
-        Instances[] splitData = splitData(data, attr);
+        Instances[] splitData = splitInstancesByAttribute(data, attr);
         for (int i = 0; i < splitData.length; i++) {
             double p = splitData[i].numInstances()/(double)data.numInstances();
             attributeEntropy += p * computeEntropy(splitData[i]);
@@ -144,15 +188,62 @@ public class MyC45 extends Classifier {
 
     }
     
+    private Instances convertInstances(Instances data, Attribute att, double threshold) {
+        Instances newData = new Instances(data);
+
+        try {
+            Add filter = new Add();
+            filter.setNominalLabels("<=" + threshold + ",>" + threshold);
+            filter.setAttributeName(att.name() + " NOM");
+            filter.setInputFormat(newData);
+            newData = Filter.useFilter(newData, filter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 0; i < newData.numInstances(); ++i) {
+            if ((double) newData.instance(i).value(newData.attribute(att.name())) <= threshold) {
+                newData.instance(i).setValue(newData.attribute(att.name() + " NOM"), "<=" + threshold);
+            } else {
+                newData.instance(i).setValue(newData.attribute(att.name() + " NOM"), ">" + threshold);
+            }
+        }
+        
+        newData.deleteAttributeAt(att.index());
+
+        return newData;
+    }
+    
+    private boolean isDoubleEqual(double a, double b) {
+        return (a == b) || Math.abs(a-b) < epsilon;
+    }
+    
+    private int maxIndex(double[] array) {
+        double max = 0;
+        int index = 0;
+
+        if (array.length > 0) {
+            for (int i = 0; i < array.length; ++i) {
+                if (array[i] > max) {
+                    max = array[i];
+                    index = i;
+                }
+            }
+            return index;
+        } else {
+            return -1;
+        }
+    }
+    
     public String toString(int level) {
         
         StringBuffer text = new StringBuffer();
         
         if (attribute == null) {
-            if (Instance.isMissingValue(classValue)) {
+            if (Instance.isMissingValue(label)) {
                 text.append(": null");
             } else {
-                text.append(": " + classAttribute.value((int) classValue));
+                text.append(": " + classAttribute.value((int) label));
             }
         } else {
             for (int i = 0; i < attribute.numValues(); i++) {
