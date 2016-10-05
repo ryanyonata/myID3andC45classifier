@@ -6,32 +6,18 @@
 
 package myid3andc45classifier;
 
+import myid3andc45classifier.Model.MyID3;
+import myid3andc45classifier.Model.WekaAccessor;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
-import java.io.BufferedReader;
-import java.io.Console;
-import java.io.FileReader;
-import java.util.Random;
-import java.util.Scanner;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.ObjectOutputStream;
-import java.util.Random;
-import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.core.Instance;
-import weka.core.converters.ConverterUtils;
-import weka.core.converters.ConverterUtils.DataSource;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Remove;
 
 /**
  *
  * @author ryanyonata
  */
-public class main {
+public class Main {
     
     public Instances dataset;
     public Instances testset;
@@ -43,7 +29,7 @@ public class main {
         // TODO code application logic here
         WekaAccessor accessor = new WekaAccessor();
         Instances trainset;
-        trainset = accessor.readARFF("D:\\weather.nominal.arff");
+        trainset = accessor.readARFF("C:\\Users\\Julio Savigny\\Documents\\myID3andC45classifier\\myID3andC45classifier\\resources\\weather.nominal.arff");
         Classifier j48 = new J48();
         Classifier model = accessor.train(trainset, j48);
         //accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
@@ -54,11 +40,15 @@ public class main {
         // Coba ID3 Apoy
         Classifier customID3 = new MyID3();
         Classifier myId3Model = accessor.train(trainset, customID3);
+        Instances resampledTrainset = accessor.resample(trainset);
         System.out.println(myId3Model);
-        System.out.println(accessor.tenFoldCrossValidation(trainset, customID3).toSummaryString());
+        System.out.println(accessor.tenFoldCrossValidation(resampledTrainset, customID3).toSummaryString());
         Evaluation eval = new Evaluation(trainset);
         eval.evaluateModel(myId3Model, trainset);
-        System.out.println(eval.toSummaryString());
+        //System.out.println(eval.toSummaryString());
+
+//        System.out.println(trainset);
+//        System.out.println(resampledTrainset);
 
         // Coba C4.5 Bayu
 //        Classifier customC45 = new myC45();
