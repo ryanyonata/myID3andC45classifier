@@ -8,17 +8,13 @@ import weka.core.converters.ConverterUtils;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Random;
 
 /**
  * Created by Julio Savigny on 10/5/2016.
  */
 public class WekaAccessor {
-
-    public Instances dataset;
-    public Instances testset;
 
     public Instances readARFF(String filepath) throws Exception {
         ConverterUtils.DataSource source = new ConverterUtils.DataSource(filepath);
@@ -30,7 +26,7 @@ public class WekaAccessor {
         return instances;
     }
 
-    public void removeAttr(int attr_number) throws Exception {
+    public void removeAttr(Instances dataset, int attr_number) throws Exception {
         String[] options = new String[2];
         options[0] = "-R";                                    // "range"
         options[1] = Integer.toString(attr_number);           // the attribute index
@@ -40,15 +36,18 @@ public class WekaAccessor {
         dataset = Filter.useFilter(dataset, remove);   // apply filter
     }
 
-    public void resample() throws Exception {
+    public Instances resample(Instances dataset) throws Exception {
         weka.filters.unsupervised.instance.Resample sampler = new weka.filters.unsupervised.instance.Resample();
         sampler.setRandomSeed((int)System.currentTimeMillis());
         sampler.setInputFormat(dataset);
         dataset = Filter.useFilter(dataset,sampler);
+        return  dataset;
     }
 
-    public Classifier train(Classifier cls) throws Exception {
+    public Classifier train(Instances dataset, Classifier cls) throws Exception {
         // train
+        if (dataset.classIndex() == -1)
+            dataset.setClassIndex(dataset.numAttributes() - 1);
         cls.buildClassifier(dataset);
         return cls;
     }
@@ -56,23 +55,28 @@ public class WekaAccessor {
 
         // serialize model
         ObjectOutputStream oos = new ObjectOutputStream(
-                new FileOutputStream("/model/some.model"));
+                new FileOutputStream(new File("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model")));
         oos.writeObject(cls);
         oos.flush();
         oos.close();
     }
 
     public Classifier loadModel(String filepath) throws Exception {
-        return (Classifier) weka.core.SerializationHelper.read(filepath);
+        //return (Classifier) weka.core.SerializationHelper.read(filepath);
+        ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(filepath));
+        Classifier cls = (Classifier) ois.readObject();
+        ois.close();
+        return cls;
     }
 
-    public Evaluation tenFoldCrossValidation(Classifier cls) throws Exception {
+    public Evaluation tenFoldCrossValidation(Instances dataset, Classifier cls) throws Exception {
         Evaluation eval = new Evaluation(dataset);
         eval.crossValidateModel(cls, dataset, 10, new Random((int)System.currentTimeMillis()));
         return eval;
     }
 
-    public Evaluation percentageSplit(Classifier cls, double percentage) throws Exception {
+    public Evaluation percentageSplit(Instances dataset, Classifier cls, double percentage) throws Exception {
         Instances instances = new Instances(dataset);
         instances.randomize(new Random((int)System.currentTimeMillis()));
 
