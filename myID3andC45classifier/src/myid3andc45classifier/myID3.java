@@ -12,7 +12,6 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.NoSupportForMissingValuesException;
 import weka.core.Utils;
-import weka.gui.beans.Classifier;
 
 /**
  *
@@ -129,15 +128,36 @@ public class myID3 extends Classifier {
         
     }
     
-    public int toString(int level) {
+    public String toString(int level) {
         
         StringBuffer text = new StringBuffer();
         
         if (attribute == null) {
             if (Instance.isMissingValue(classValue)) {
-                
+                text.append(": null");
+            } else {
+                text.append(": " + classAttribute.value((int) classValue));
+            }
+        } else {
+            for (int i = 0; i < attribute.numValues(); i++) {
+                text.append("\n");
+                for (int j = 0; j < level; j++) {
+                    text.append("|  ");
+                }
+                text.append(attribute.name() + " = " + attribute.value(i));
+                text.append(successors[i].toString(level + 1));
             }
         }
+        
+        return text.toString();
+    }
+    
+    public String toString() {
+        if ((distribution == null) && (successors == null)) {
+            return "Id3: No model built yet.";
+        }
+        
+        return "Id3\n\n" + toString(0);
     }
     
 }
