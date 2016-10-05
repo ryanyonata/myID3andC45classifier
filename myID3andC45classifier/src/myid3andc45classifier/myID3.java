@@ -6,7 +6,7 @@
 package myid3andc45classifier;
 
 import java.util.Enumeration;
-import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -18,11 +18,15 @@ import weka.gui.beans.Classifier;
  *
  * @author ryanyonata
  */
-public class myID3 extends AbstractClassifier {
+public class myID3 extends Classifier {
+    
     //Daftar atribut kelas
     private myID3[] successors; 
     private Attribute attribute;
     private double classValue;
+    private double[] distribution;
+    private Attribute classAttribute;
+    
     
     //Methods
 
@@ -124,4 +128,16 @@ public class myID3 extends AbstractClassifier {
         return computeEntropy(data) - computeAttributeEntropy(data, attr);
         
     }
+    
+    public int toString(int level) {
+        
+        StringBuffer text = new StringBuffer();
+        
+        if (attribute == null) {
+            if (Instance.isMissingValue(classValue)) {
+                
+            }
+        }
+    }
+    
 }
