@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package myid3andc45classifier;
+package myid3andc45classifier.Model;
 
 import java.util.Enumeration;
 import weka.classifiers.Classifier;
