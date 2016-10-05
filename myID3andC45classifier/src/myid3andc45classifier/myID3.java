@@ -56,7 +56,48 @@ public class myID3 extends Classifier {
     }
     
     public void makeMyID3Tree(Instances data) throws Exception {
+        // Check if no instances have reached this node.
+        if (data.numInstances() == 0) {
+            attribute = null;
+            classValue = Instance.missingValue();
+            distribution = new double[data.numClasses()];
+            return;
+        }
         
+        // Compute attribute with maximum information gain.
+        double[] infoGains = new double[data.numAttributes()];
+        int numAttributes = data.numAttributes();
+        Attribute[] attributes = null;
+        
+        for (int i = 0; i < numAttributes; i++) {
+            Attribute att = (Attribute) attributes[i];
+            infoGains[att.index()] = computeInfoGain(data, att);
+        }
+        attribute = data.attribute(Utils.maxIndex(infoGains));
+
+        // Make leaf if information gain is zero. 
+        // Otherwise create successors.
+        if (Utils.eq(infoGains[attribute.index()], 0)) {
+            attribute = null;
+            distribution = new double[data.numClasses()];
+            
+            Instance[] listInstances = null;
+            for (int i = 0; i < numAttributes; i++) {
+                Instance inst = (Instance) listInstances[i];
+                distribution[(int) inst.classValue()]++;
+            }
+
+            Utils.normalize(distribution);
+            classValue = Utils.maxIndex(distribution);
+            classAttribute = data.classAttribute();
+        } else {
+            Instances[] splitData = splitData(data, attribute);
+            successors = new myID3[attribute.numValues()];
+            for (int j = 0; j < attribute.numValues(); j++) {
+                successors[j] = new myID3();
+                successors[j].buildClassifier(splitData[j]);
+            }
+        }
     }
     
     public double[] listClassCountsValues(Instances data) throws Exception {
@@ -92,7 +133,6 @@ public class myID3 extends Classifier {
         //Split data menjadi beberapa instances sesuai dengan jumlah jenis data pada atribut
         Instances[] splitData = new Instances[attr.numValues()];
         
-        //
         for (int i = 0; i < attr. numValues(); i++) {
             splitData[i] = new Instances(data, data.numInstances());
         }
