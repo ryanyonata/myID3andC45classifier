@@ -46,7 +46,7 @@ public class main {
         trainset = accessor.readARFF("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\resources\\weather.nominal.arff");
         Classifier j48 = new J48();
         Classifier model = accessor.train(trainset, j48);
-        accessor.saveModel(model);
+        accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
         Classifier loadedModel = accessor.loadModel("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
         System.out.println(model);
         System.out.println(loadedModel);

@@ -51,11 +51,11 @@ public class WekaAccessor {
         cls.buildClassifier(dataset);
         return cls;
     }
-    public void saveModel(Classifier cls) throws Exception {
+    public void saveModel(Classifier cls, String filepath) throws Exception {
 
         // serialize model
         ObjectOutputStream oos = new ObjectOutputStream(
-                new FileOutputStream(new File("C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model")));
+                new FileOutputStream(new File(filepath)));
         oos.writeObject(cls);
         oos.flush();
         oos.close();
