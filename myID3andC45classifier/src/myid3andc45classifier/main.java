@@ -55,6 +55,10 @@ public class main {
         Classifier customID3 = new myID3();
         Classifier myId3Model = accessor.train(trainset, customID3);
         System.out.println(myId3Model);
+        System.out.println(accessor.tenFoldCrossValidation(trainset, customID3).toSummaryString());
+        Evaluation eval = new Evaluation(trainset);
+        eval.evaluateModel(myId3Model, trainset);
+        System.out.println(eval.toSummaryString());
 
         // Coba C4.5 Bayu
 //        Classifier customC45 = new myC45();
