@@ -58,14 +58,50 @@ public class MyC45 extends Classifier {
                     }
                 }
                 
-                data = savedData;
+                data = new Instances(savedData);
             }
         }
-        
+        makeMyC45Tree(data);
         
     }
     
+    @Override
+    public double classifyInstance(Instance instance) {
+        int i = 0;
+        if (attribute == null) {
+            return label;
+        } else {
+            boolean numeric = false;
+            for(int j = 0; j < instance.numAttributes(); j++) {
+                if(instance.attribute(j).isNumeric()) {
+                    if(instance.attribute(j).name().equalsIgnoreCase(attribute.name())) {
+                        numeric = true;
+                        break;
+                    }
+                    i++;
+                }
+            }
+            if (numeric) {
+                double threshold = getThreshold(attribute);
+                double val = (double) instance.value(i);
+                if (val <= threshold) {
+                    instance.setValue(attribute, "<="+threshold);
+                } else {
+                    instance.setValue(attribute, ">"+threshold);
+                }
+            }
+            
+            return successors[(int)instance.value(attribute)].classifyInstance(instance);
+        }
+  
+    }
+    
     public void makeMyC45Tree(Instances data) throws Exception {
+        if (data.numInstances() == 0) {
+            attribute = null;
+            label = Instance.missingValue();
+            return;
+        }
         
         double[] infoGainRatios = new double[data.numAttributes()];
         Enumeration attEnum = data.enumerateAttributes();
@@ -79,7 +115,7 @@ public class MyC45 extends Classifier {
 
         // Make leaf if information gain is zero. 
         // Otherwise create successors.
-        if (isDoubleEqual(infoGainRatios[attribute.index()], 0)) {
+        if (isDoubleEqual(computeInfoGain(data, attribute), 0)) {
             attribute = null;
             double[] numClasses = new double[data.numClasses()];
             
@@ -93,9 +129,9 @@ public class MyC45 extends Classifier {
             classAttribute = data.classAttribute();
         } else {
             Instances[] splitData = splitInstancesByAttribute(data, attribute);
-            successors = new MyID3[attribute.numValues()];
+            successors = new MyC45[attribute.numValues()];
             for (int j = 0; j < attribute.numValues(); j++) {
-                successors[j] = new MyID3();
+                successors[j] = new MyC45();
                 successors[j].buildClassifier(splitData[j]);
             }
         }
@@ -166,6 +202,21 @@ public class MyC45 extends Classifier {
         
     }
     
+    public double computeInfoGain(Instances data, Attribute attr) throws Exception {
+        
+        double attributeEntropy = 0;
+        
+        Instances[] splitData = splitInstancesByAttribute(data, attr);
+        for (int i = 0; i < splitData.length; i++) {
+            double p = splitData[i].numInstances()/(double)data.numInstances();
+            attributeEntropy += p * computeEntropy(splitData[i]);
+        }
+        
+        return computeEntropy(data) - attributeEntropy;
+        
+    }
+    
+    @Override
     public Capabilities getCapabilities() {
 
         Capabilities result = super.getCapabilities();
@@ -190,11 +241,15 @@ public class MyC45 extends Classifier {
     
     private Instances convertInstances(Instances data, Attribute att, double threshold) {
         Instances newData = new Instances(data);
+        int idx = att.index();
+        String name = att.name();
+        newData.renameAttribute(att, "temp");
 
         try {
             Add filter = new Add();
+            filter.setAttributeIndex((idx + 2) + "");
             filter.setNominalLabels("<=" + threshold + ",>" + threshold);
-            filter.setAttributeName(att.name() + " NOM");
+            filter.setAttributeName(name);
             filter.setInputFormat(newData);
             newData = Filter.useFilter(newData, filter);
         } catch (Exception e) {
@@ -202,10 +257,10 @@ public class MyC45 extends Classifier {
         }
 
         for (int i = 0; i < newData.numInstances(); ++i) {
-            if ((double) newData.instance(i).value(newData.attribute(att.name())) <= threshold) {
-                newData.instance(i).setValue(newData.attribute(att.name() + " NOM"), "<=" + threshold);
+            if ((double) newData.instance(i).value(newData.attribute(idx)) <= threshold) {
+                newData.instance(i).setValue(newData.attribute(name), "<=" + threshold);
             } else {
-                newData.instance(i).setValue(newData.attribute(att.name() + " NOM"), ">" + threshold);
+                newData.instance(i).setValue(newData.attribute(name), ">" + threshold);
             }
         }
         
@@ -260,10 +315,14 @@ public class MyC45 extends Classifier {
     }
     
     public String toString() {
-        if ((distribution == null) && (successors == null)) {
+        if (successors == null) {
             return "C45: No model built yet.";
         }
         
         return "C45\n\n" + toString(0);
+    }
+
+    private double getThreshold(Attribute attr) {
+        return Double.parseDouble(attr.value(0).replace("<=", ""));
     }
 }
