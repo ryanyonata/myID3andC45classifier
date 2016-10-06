@@ -406,13 +406,16 @@ public class MyC45 extends Classifier {
             for (int i = 0; i < successors.length; i++) {
         
                 MyC45 temp = this.successors[i]; //save children
+                Attribute tempA = attribute;
+                attribute = null;
                 this.successors[i] = null; //pruning
-                this.label = data.classAttribute().value(distribution.);
+                this.label = (double) maxDistribution();
                 double prunedError = countError(data);
 
                 if (error < prunedError) {
                     //Cancel Pruning
                     this.successors[i] = temp;
+                    attribute = tempA;
                 }
             }
         }
