@@ -49,17 +49,19 @@ public class MyC45 extends Classifier {
                 data.sort(attr);
                 for (int i = 0; i < data.numInstances()-1; i++) {
                     if (data.instance(i).classValue() != data.instance(i+1).classValue()) {
-                        Instances newData = convertInstances(data, attr, (data.instance(i+1).value(attr)+data.instance(i).value(attr))/2);
-                        temp = computeInfoGainRatio(newData, newData.attribute(newData.numAttributes()-1));
-                        System.out.println("attribute "+newData.attribute(newData.numAttributes()-1).name());
-                        if (temp > max) {
-                            max = temp;
-                            savedData = newData;
+                        if (data.attribute(attr.name() + " " + (data.instance(i+1).value(attr)+data.instance(i).value(attr))/2) == null) {
+                        data = convertInstances(data, attr, (data.instance(i+1).value(attr)+data.instance(i).value(attr))/2);
+                        //temp = computeInfoGainRatio(newData, newData.attribute(newData.numAttributes()-1));
+                        //System.out.println("attribute "+newData.attribute(newData.numAttributes()-1).name());
+                        //if (temp > max) {
+                        //    max = temp;
+                        //    savedData = newData;
+                        //}
                         }
                     }
                 }
                 
-                data = new Instances(savedData);
+                //data = new Instances(savedData);
             }
         }
         makeMyC45Tree(data);
@@ -75,7 +77,7 @@ public class MyC45 extends Classifier {
             boolean numeric = false;
             for(int j = 0; j < instance.numAttributes(); j++) {
                 if(instance.attribute(j).isNumeric()) {
-                    if(instance.attribute(j).name().equalsIgnoreCase(attribute.name())) {
+                    if(instance.attribute(j).name().equalsIgnoreCase(attribute.name().split(" ")[0])) {
                         numeric = true;
                         break;
                     }
@@ -83,12 +85,15 @@ public class MyC45 extends Classifier {
                 }
             }
             if (numeric) {
-                double threshold = getThreshold(attribute);
+                double threshold = Double.parseDouble(attribute.name().split(" ")[1]);
+                //System.out.println("WOWW!!! " + attribute.name() + " threshold is " + threshold);
                 double val = (double) instance.value(i);
                 if (val <= threshold) {
-                    instance.setValue(attribute, "<="+threshold);
+                    return successors[(int) attribute.indexOfValue("<="+threshold)].classifyInstance(instance);
+                    //instance.setValue(attribute, "<="+threshold);
                 } else {
-                    instance.setValue(attribute, ">"+threshold);
+                    return successors[(int) attribute.indexOfValue(">"+threshold)].classifyInstance(instance);
+                    //instance.setValue(attribute, ">"+threshold);
                 }
             }
             
@@ -103,7 +108,7 @@ public class MyC45 extends Classifier {
             label = Instance.missingValue();
             return;
         }
-        System.out.println("NEW");
+        //System.out.println("NEW");
         double[] infoGainRatios = new double[data.numAttributes()];
         Enumeration attEnum = data.enumerateAttributes();
         while (attEnum.hasMoreElements()) {
@@ -112,15 +117,15 @@ public class MyC45 extends Classifier {
                 infoGainRatios[att.index()] = computeInfoGainRatio(data, att);
             else
                 infoGainRatios[att.index()] = Double.NEGATIVE_INFINITY;
-            System.out.println(att.name() + " " + infoGainRatios[att.index()]);
+            //System.out.println(att.name() + " " + infoGainRatios[att.index()]);
         }
         
         // TODO: build the tree
         attribute = data.attribute(maxIndex(infoGainRatios));
-        
+        //System.out.println(infoGainRatios[maxIndex(infoGainRatios)]);
         // Make leaf if information gain is zero. 
         // Otherwise create successors.
-        if (isDoubleEqual(computeInfoGain(data, attribute), 0)) {
+        if (infoGainRatios[maxIndex(infoGainRatios)] <= epsilon || Double.isNaN(infoGainRatios[maxIndex(infoGainRatios)])) {
             attribute = null;
             double[] numClasses = new double[data.numClasses()];
             
@@ -253,19 +258,19 @@ public class MyC45 extends Classifier {
             Add filter = new Add();
             //filter.setAttributeIndex((idx + 2) + "");
             filter.setNominalLabels("<=" + threshold + ",>" + threshold);
-            filter.setAttributeName(name + threshold);
+            filter.setAttributeName(name + " " + threshold);
             filter.setInputFormat(newData);
             newData = Filter.useFilter(newData, filter);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Base attribute "+name+" index "+newData.attribute(name).index());
-        System.out.println("New attribute "+newData.attribute(name + threshold).name()+" index "+newData.attribute(name + threshold).index());
+        //System.out.println("Base attribute "+name+" index "+newData.attribute(name).index());
+        //System.out.println("New attribute "+newData.attribute(name + " " + threshold).name()+" index "+newData.attribute(name + " " + threshold).index());
         for (int i = 0; i < newData.numInstances(); ++i) {
             if ((double) newData.instance(i).value(newData.attribute(idx)) <= threshold) {
-                newData.instance(i).setValue(newData.attribute(name + threshold), "<=" + threshold);
+                newData.instance(i).setValue(newData.attribute(name + " " + threshold), "<=" + threshold);
             } else {
-                newData.instance(i).setValue(newData.attribute(name + threshold), ">" + threshold);
+                newData.instance(i).setValue(newData.attribute(name + " " + threshold), ">" + threshold);
             }
         }
         
