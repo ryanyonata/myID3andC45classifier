@@ -1,5 +1,6 @@
 package myid3andc45classifier.Controller;
 
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,8 +14,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import myid3andc45classifier.Model.MyC45;
+import myid3andc45classifier.Model.MyID3;
 import myid3andc45classifier.Model.PreprocessRow;
 import myid3andc45classifier.Model.WekaAccessor;
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
+import weka.classifiers.trees.Id3;
+import weka.classifiers.trees.J48;
 import weka.core.Instances;
 
 import java.io.File;
@@ -73,6 +80,9 @@ public class MainController implements Initializable {
     private Button btn_trainModel;
 
     @FXML
+    private Button btn_testModel;
+
+    @FXML
     private Button btn_saveModel;
 
     @FXML
@@ -120,16 +130,24 @@ public class MainController implements Initializable {
     @FXML
     private TextField textarea_predict;
 
-    Instances trainset;
-    ArrayList<PreprocessRow> preprocessRows;
-    ObservableList<PreprocessRow> oPreprocessRows;
+    @FXML
+    private TextArea textArea_Log;
+
+    private Instances trainset;
+    private Instances testset;
+    private ArrayList<PreprocessRow> preprocessRows;
+    private ObservableList<PreprocessRow> oPreprocessRows;
+    private Classifier currentClassifier;
+    private Classifier currentModel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         final WekaAccessor accessor = new WekaAccessor();
+        currentModel = null;
         preprocessRows = new ArrayList<PreprocessRow>();
         tab_classify.setDisable(true);
         tab_predict.setDisable(true);
+        btn_saveModel.setDisable(true);
         btn_browseArff.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -227,6 +245,145 @@ public class MainController implements Initializable {
             }
         });
 
+        btn_trainModel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                updateClassifier();
+                try {
+                    currentModel = accessor.train(trainset, currentClassifier);
+                    label_isModel.setText(currentModel.getClass().getSimpleName());
+                    textArea_Log.appendText(currentModel.toString()+'\n');
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        btn_saveModel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (currentModel != null){
+                    FileChooser fileChooser = new FileChooser();
+
+                    //Set extension filter
+                    FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Model Files", "*.model");
+                    fileChooser.getExtensionFilters().add(extFilter);
+
+                    //Show save file dialog
+                    File file = fileChooser.showSaveDialog(new Stage());
+
+                    if(file != null){
+                        try {
+                            accessor.saveModel(currentModel, file.getAbsolutePath());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }
+        });
+
+        btn_loadModel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Open Model File");
+                fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Weka Model Files", "*.model"));
+                File selectedFile = fileChooser.showOpenDialog(new Stage());
+                if (selectedFile != null) {
+                    try {
+                        currentModel = accessor.loadModel(selectedFile.getAbsolutePath());
+                        label_isModel.setText(currentModel.getClass().getSimpleName());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        button_selectTestArff.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Open Resource File");
+                fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Weka Data Files", "*.arff", "*.xrff", "*.csv"));
+                File selectedFile = fileChooser.showOpenDialog(new Stage());
+                if (selectedFile != null) {
+                    try {
+                        testset = accessor.readARFF(selectedFile.getAbsolutePath());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        btn_testModel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Evaluation eval;
+                try {
+                    if (radio_tenFold.isSelected()) {
+                        updateClassifier();
+                        eval = accessor.tenFoldCrossValidation(trainset, currentClassifier);
+                        textArea_Log.appendText(eval.toSummaryString()+'\n');
+                        currentModel = accessor.train(trainset,currentClassifier);
+                        label_isModel.setText(currentModel.getClass().getSimpleName());
+                    } else if (radio_percentageSplit.isSelected()) {
+                        updateClassifier();
+                        eval = accessor.percentageSplit(trainset, currentClassifier, Integer.parseInt(tfield_percentageSplit.getText()));
+                        textArea_Log.appendText(eval.toSummaryString()+'\n');
+                        currentModel = accessor.train(trainset,currentClassifier);
+                        label_isModel.setText(currentModel.getClass().getSimpleName());
+                    } else if (radio_testSet.isSelected()) {
+                        if (testset != null && currentModel != null){
+                            updateClassifier();
+                            eval = new Evaluation(trainset);
+                            eval.evaluateModel(currentModel, testset);
+                            textArea_Log.appendText(eval.toSummaryString()+'\n');
+                            currentModel = accessor.train(trainset,currentClassifier);
+                            label_isModel.setText(currentModel.getClass().getSimpleName());
+                        } else if (testset == null){
+                            textArea_Log.appendText("\n The test set must exist. (Select test set first!) ");
+                        } else {
+                            textArea_Log.appendText("\n The model must exist. (Train first!)");
+                        }
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        textArea_Log.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                textArea_Log.setScrollTop(Double.MAX_VALUE); //this will scroll to the bottom
+            }
+        });
+
+        label_isModel.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                btn_saveModel.setDisable(false);
+                tab_predict.setDisable(false);
+            }
+        });
+    }
+
+    public void updateClassifier() {
+        if (radio_wekaId3.isSelected()) {
+            currentClassifier = new Id3();
+        } else if (radio_wekaC45.isSelected()) {
+            currentClassifier = new J48();
+        } else if (radio_myId3.isSelected()) {
+            currentClassifier = new MyID3();
+        } else if (radio_myC45.isSelected()) {
+            currentClassifier = new MyC45();
+        }
     }
 }
 
