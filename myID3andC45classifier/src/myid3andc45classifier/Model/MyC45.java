@@ -49,8 +49,9 @@ public class MyC45 extends Classifier {
                 data.sort(attr);
                 for (int i = 0; i < data.numInstances()-1; i++) {
                     if (data.instance(i).classValue() != data.instance(i+1).classValue()) {
-                        Instances newData = convertInstances(data, attr, (data.instance(i+1).value(attr)-data.instance(i).value(attr))/2);
+                        Instances newData = convertInstances(data, attr, (data.instance(i+1).value(attr)+data.instance(i).value(attr))/2);
                         temp = computeInfoGainRatio(newData, newData.attribute(newData.numAttributes()-1));
+                        System.out.println("attribute "+newData.attribute(newData.numAttributes()-1).name());
                         if (temp > max) {
                             max = temp;
                             savedData = newData;
@@ -102,17 +103,21 @@ public class MyC45 extends Classifier {
             label = Instance.missingValue();
             return;
         }
-        
+        System.out.println("NEW");
         double[] infoGainRatios = new double[data.numAttributes()];
         Enumeration attEnum = data.enumerateAttributes();
         while (attEnum.hasMoreElements()) {
             Attribute att = (Attribute) attEnum.nextElement();
-            infoGainRatios[att.index()] = computeInfoGainRatio(data, att);
+            if (!att.isNumeric())
+                infoGainRatios[att.index()] = computeInfoGainRatio(data, att);
+            else
+                infoGainRatios[att.index()] = Double.NEGATIVE_INFINITY;
+            System.out.println(att.name() + " " + infoGainRatios[att.index()]);
         }
         
         // TODO: build the tree
         attribute = data.attribute(maxIndex(infoGainRatios));
-
+        
         // Make leaf if information gain is zero. 
         // Otherwise create successors.
         if (isDoubleEqual(computeInfoGain(data, attribute), 0)) {
@@ -243,28 +248,28 @@ public class MyC45 extends Classifier {
         Instances newData = new Instances(data);
         int idx = att.index();
         String name = att.name();
-        newData.renameAttribute(att, "temp");
 
         try {
             Add filter = new Add();
-            filter.setAttributeIndex((idx + 2) + "");
+            //filter.setAttributeIndex((idx + 2) + "");
             filter.setNominalLabels("<=" + threshold + ",>" + threshold);
-            filter.setAttributeName(name);
+            filter.setAttributeName(name + threshold);
             filter.setInputFormat(newData);
             newData = Filter.useFilter(newData, filter);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        System.out.println("Base attribute "+name+" index "+newData.attribute(name).index());
+        System.out.println("New attribute "+newData.attribute(name + threshold).name()+" index "+newData.attribute(name + threshold).index());
         for (int i = 0; i < newData.numInstances(); ++i) {
             if ((double) newData.instance(i).value(newData.attribute(idx)) <= threshold) {
-                newData.instance(i).setValue(newData.attribute(name), "<=" + threshold);
+                newData.instance(i).setValue(newData.attribute(name + threshold), "<=" + threshold);
             } else {
-                newData.instance(i).setValue(newData.attribute(name), ">" + threshold);
+                newData.instance(i).setValue(newData.attribute(name + threshold), ">" + threshold);
             }
         }
         
-        newData.deleteAttributeAt(att.index());
+        //newData.deleteAttributeAt(att.index());
 
         return newData;
     }
