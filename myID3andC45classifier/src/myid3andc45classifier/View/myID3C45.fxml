@@ -22,13 +22,12 @@
                     <columns>
                       <TableColumn id="datasetTable_numbers" fx:id="table_preprocessNumbers" prefWidth="63.0" text="No" />
                       <TableColumn id="datasetTable_checkboxes" fx:id="table_preprocessCheckboxes" prefWidth="62.0" />
-                        <TableColumn id="datasetTable_attributes" fx:id="table_preprocessAttributes" prefWidth="191.0" text="Attribute" />
+                        <TableColumn id="datasetTable_attributes" fx:id="table_preprocessAttributes" prefWidth="196.0" text="Attribute" />
                     </columns>
                   </TableView>
                   <Button id="btn_removeAttr" fx:id="btn_removeAttribute" layoutX="28.0" layoutY="318.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="253.0" text="Remove" />
-                  <Button id="btn_loadArff" fx:id="btn_loadArff" layoutX="297.0" layoutY="27.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="50.0" text="Load" />
-                  <Button id="btn_browseArff" fx:id="btn_browseArff" layoutX="222.0" layoutY="27.0" mnemonicParsing="false" text="Browse.." />
-                  <TextField id="tfield_arffPath" fx:id="tfield_arffPath" layoutX="33.0" layoutY="27.0" prefHeight="25.0" prefWidth="177.0" />
+                  <Button id="btn_browseArff" fx:id="btn_browseArff" layoutX="291.0" layoutY="27.0" mnemonicParsing="false" text="Browse.." />
+                  <TextField id="tfield_arffPath" fx:id="tfield_arffPath" layoutX="33.0" layoutY="27.0" prefHeight="25.0" prefWidth="246.0" />
                   <Button id="btn_resample" fx:id="btn_resample" layoutX="281.0" layoutY="318.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Resample" />
                </children></AnchorPane>
       </content>
@@ -58,6 +57,7 @@
                   <Button id="button_testArff" fx:id="button_selectTestArff" layoutX="150.0" layoutY="137.0" mnemonicParsing="false" text="Select" />
                   <Label layoutX="226.0" layoutY="141.0" text="Model:" />
                   <Label id="label_isModel" fx:id="label_isModel" layoutX="275.0" layoutY="141.0" text="No Model" />
+                  <Label layoutX="198.0" layoutY="97.0" text="\%" />
                </children></AnchorPane>
       </content>
     </Tab>

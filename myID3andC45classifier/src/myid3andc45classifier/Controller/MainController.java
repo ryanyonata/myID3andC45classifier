@@ -1,17 +1,25 @@
 package myid3andc45classifier.Controller;
 
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.util.Callback;
+import myid3andc45classifier.Model.PreprocessRow;
+import myid3andc45classifier.Model.WekaAccessor;
+import weka.core.Instances;
 
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -20,22 +28,19 @@ public class MainController implements Initializable {
     private Tab tab_preprocess;
 
     @FXML
-    private TableView<?> table_preprocess;
+    private TableView<PreprocessRow> table_preprocess;
 
     @FXML
-    private TableColumn<?, ?> table_preprocessNumbers;
+    private TableColumn<PreprocessRow, Integer> table_preprocessNumbers;
 
     @FXML
-    private TableColumn<?, ?> table_preprocessCheckboxes;
+    private TableColumn<PreprocessRow, Boolean> table_preprocessCheckboxes;
 
     @FXML
-    private TableColumn<?, ?> table_preprocessAttributes;
+    private TableColumn<PreprocessRow, String> table_preprocessAttributes;
 
     @FXML
     private Button btn_removeAttribute;
-
-    @FXML
-    private Button btn_loadArff;
 
     @FXML
     private Button btn_browseArff;
@@ -115,8 +120,112 @@ public class MainController implements Initializable {
     @FXML
     private TextField textarea_predict;
 
+    Instances trainset;
+    ArrayList<PreprocessRow> preprocessRows;
+    ObservableList<PreprocessRow> oPreprocessRows;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        final WekaAccessor accessor = new WekaAccessor();
+        preprocessRows = new ArrayList<PreprocessRow>();
+        tab_classify.setDisable(true);
+        tab_predict.setDisable(true);
+        btn_browseArff.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Open Resource File");
+                fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Weka Data Files", "*.arff", "*.xrff", "*.csv"));
+                File selectedFile = fileChooser.showOpenDialog(new Stage());
+                if (selectedFile != null) {
+                    tfield_arffPath.setText(selectedFile.getAbsolutePath());
+                    try {
+                        trainset = accessor.readARFF(selectedFile.getAbsolutePath());
+                        tab_classify.setDisable(false);
+                        System.out.println(trainset);
+                        System.out.println(trainset.numAttributes());
+                        preprocessRows.clear();
+                        for (int i=0; i < trainset.numAttributes(); i++){
+                            preprocessRows.add(new PreprocessRow(i+1,trainset.attribute(i).name()));
+                        }
+                        oPreprocessRows = FXCollections.observableArrayList(preprocessRows);
+                        table_preprocessNumbers.setCellValueFactory(
+                                new PropertyValueFactory<PreprocessRow,Integer>("number")
+                        );
+                        table_preprocessAttributes.setCellValueFactory(
+                                new PropertyValueFactory<PreprocessRow, String>("attribute")
+                        );
+                        table_preprocessCheckboxes.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<PreprocessRow, Boolean>, ObservableValue<Boolean>>() {
+                            @Override
+                            public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<PreprocessRow, Boolean> param) {
+                                return param.getValue().isSelected();
+                            }
+                        });
+                        table_preprocessCheckboxes.setCellFactory(CheckBoxTableCell.forTableColumn(table_preprocessCheckboxes));
+                        table_preprocessCheckboxes.setEditable(true);
+                        table_preprocess.setItems(oPreprocessRows);
+                        table_preprocess.setEditable(true);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        btn_removeAttribute.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println(oPreprocessRows.toString());
+                int isSelectedCount = 0;
+                int selectedRow = -1;
+                for (PreprocessRow row : oPreprocessRows) {
+                    if (row.isSelected().getValue()) {
+                        isSelectedCount++;
+                        selectedRow = row.getNumber();
+                    }
+                }
+                if (isSelectedCount == 1){
+                    try {
+                        trainset = accessor.removeAttr(trainset, selectedRow);
+                        System.out.println(trainset);
+                        preprocessRows.clear();
+                        for (int i=0; i < trainset.numAttributes(); i++){
+                            preprocessRows.add(new PreprocessRow(i+1,trainset.attribute(i).name()));
+                        }
+                        oPreprocessRows = FXCollections.observableArrayList(preprocessRows);
+                        table_preprocessNumbers.setCellValueFactory(
+                                new PropertyValueFactory<PreprocessRow,Integer>("number")
+                        );
+                        table_preprocessAttributes.setCellValueFactory(
+                                new PropertyValueFactory<PreprocessRow, String>("attribute")
+                        );
+                        table_preprocessCheckboxes.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<PreprocessRow, Boolean>, ObservableValue<Boolean>>() {
+                            @Override
+                            public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<PreprocessRow, Boolean> param) {
+                                return param.getValue().isSelected();
+                            }
+                        });
+                        table_preprocessCheckboxes.setCellFactory(CheckBoxTableCell.forTableColumn(table_preprocessCheckboxes));
+                        table_preprocessCheckboxes.setEditable(true);
+                        table_preprocess.setItems(oPreprocessRows);
+                        table_preprocess.setEditable(true);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        btn_resample.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    trainset = accessor.resample(trainset);
+                    System.out.println(trainset);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 }
