@@ -29,7 +29,9 @@ public class MyC45 extends Classifier {
     private double label;
     private double[] distribution;
     private Attribute classAttribute;
+    private Attribute splittedAttribute;
     private static final double epsilon = 1e-6;
+    private boolean pruned = false;
     
     @Override
     public void buildClassifier(Instances data) throws Exception {
@@ -334,5 +336,26 @@ public class MyC45 extends Classifier {
 
     private double getThreshold(Attribute attr) {
         return Double.parseDouble(attr.value(0).replace("<=", ""));
+    }
+    
+    public boolean checkInstance (Instance instance) {
+        double cv = instance.classValue();
+        return isDoubleEqual(cv, classifyInstance(instance));
+    }
+    
+    public double countError (Instances instances) {
+        int ctrFalse = 0;
+        int ctr = 0;
+        Enumeration enumeration = instances.enumerateInstances();
+        while (enumeration.hasMoreElements()) {
+            Instance instance = (Instance) enumeration.nextElement();
+            if (checkInstance(instance)) {
+                ctr++;
+            } else  {
+                ctrFalse++;
+                ctr++;
+            }
+        }
+        return (double) ctrFalse/ (double) (ctr);
     }
 }

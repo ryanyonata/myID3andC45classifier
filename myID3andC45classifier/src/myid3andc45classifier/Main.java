@@ -6,6 +6,7 @@
 
 package myid3andc45classifier;
 
+import myid3andc45classifier.Model.MyC45;
 import myid3andc45classifier.Model.MyID3;
 import myid3andc45classifier.Model.WekaAccessor;
 import weka.classifiers.Classifier;
@@ -29,7 +30,7 @@ public class Main {
         // TODO code application logic here
         WekaAccessor accessor = new WekaAccessor();
         Instances trainset;
-        trainset = accessor.readARFF("C:\\Users\\Julio Savigny\\Documents\\myID3andC45classifier\\myID3andC45classifier\\resources\\weather.nominal.arff");
+        trainset = accessor.readARFF("D:\\Semester VII\\ML\\myID3andC45classifier\\myID3andC45classifier\\resources\\iris.arff");
         Classifier j48 = new J48();
         Classifier model = accessor.train(trainset, j48);
         //accessor.saveModel(model, "C:\\Users\\Julio Savigny\\Desktop\\myID3andC45classifier\\myID3andC45classifier\\some.model");
@@ -38,11 +39,12 @@ public class Main {
         //System.out.println(loadedModel);
 
         // Coba ID3 Apoy
-        Classifier customID3 = new MyID3();
+        Classifier customID3 = new MyC45();
         Classifier myId3Model = accessor.train(trainset, customID3);
         Instances resampledTrainset = accessor.resample(trainset);
+        System.out.println("WOY");
         System.out.println(myId3Model);
-        System.out.println(accessor.tenFoldCrossValidation(resampledTrainset, customID3).toSummaryString());
+        System.out.println(accessor.tenFoldCrossValidation(trainset, customID3).toSummaryString());
         Evaluation eval = new Evaluation(trainset);
         eval.evaluateModel(myId3Model, trainset);
         //System.out.println(eval.toSummaryString());
