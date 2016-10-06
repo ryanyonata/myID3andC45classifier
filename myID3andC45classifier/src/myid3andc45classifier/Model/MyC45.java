@@ -402,11 +402,12 @@ public class MyC45 extends Classifier {
         
         //Pruning jika successor != 0
         if (successors != null) {
+            double error = countError(data);
             for (int i = 0; i < successors.length; i++) {
-                double error = countError(data);
         
                 MyC45 temp = this.successors[i]; //save children
                 this.successors[i] = null; //pruning
+                this.label = data.classAttribute().value(distribution.);
                 double prunedError = countError(data);
 
                 if (error < prunedError) {
@@ -416,5 +417,17 @@ public class MyC45 extends Classifier {
             }
         }
         
+    }
+    
+    private int maxDistribution(){
+        double max = Double.NEGATIVE_INFINITY;
+        int idx = 0;
+        for (int i = 0; i < distribution.length; i++) {
+            if (distribution[i] > max) {
+                idx = i;
+                max = distribution[i];
+            }
+        }
+        return idx;
     }
 }
