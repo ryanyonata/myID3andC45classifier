@@ -73,13 +73,13 @@ public class WekaAccessor {
 
     public Evaluation tenFoldCrossValidation(Instances dataset, Classifier cls) throws Exception {
         Evaluation eval = new Evaluation(dataset);
-        eval.crossValidateModel(cls, dataset, 10, new Random((int)System.currentTimeMillis()));
+        eval.crossValidateModel(cls, dataset, 10, new Random(1));
         return eval;
     }
 
     public Evaluation percentageSplit(Instances dataset, Classifier cls, double percentage) throws Exception {
         Instances instances = new Instances(dataset);
-        instances.randomize(new Random((int)System.currentTimeMillis()));
+        instances.randomize(new Random(1));
 
         int trainSize = (int) Math.round(instances.numInstances() * percentage / 100);
         int testSize = instances.numInstances() - trainSize;

@@ -6,9 +6,12 @@
 package myid3andc45classifier.Model;
 
 import java.util.ArrayList;
+import static java.util.Collections.copy;
 import java.util.Enumeration;
+import static javafx.collections.FXCollections.copy;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
+import weka.core.AttributeStats;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
 import weka.core.Instance;
@@ -29,7 +32,9 @@ public class MyC45 extends Classifier {
     private double label;
     private double[] distribution;
     private Attribute classAttribute;
+    private Attribute splittedAttribute;
     private static final double epsilon = 1e-6;
+    private boolean pruned = false;
     
     @Override
     public void buildClassifier(Instances data) throws Exception {
@@ -61,7 +66,37 @@ public class MyC45 extends Classifier {
                     }
                 }
                 
+                //Penanganan Missing Value
+                AttributeStats attributeStats = data.attributeStats(attr.index());
+                double mean = attributeStats.numericStats.mean;
+                if (Double.isNaN(mean)) mean = 0;
+                // Replace missing value with mean
+                Enumeration instEnumerate = data.enumerateInstances();
+                while(instEnumerate.hasMoreElements()){
+                    Instance instance = (Instance)instEnumerate.nextElement();
+                    if(instance.isMissing(attr.index())){
+                        instance.setValue(attr.index(),mean);
+                    }
+                }
+                
                 //data = new Instances(savedData);
+            } else {
+                //Penanganan Missing Value
+                AttributeStats attributeStats = data.attributeStats(attr.index());
+                int maxIndex = 0;
+                for(int i=1; i<attr.numValues(); i++){
+                    if(attributeStats.nominalCounts[maxIndex] < attributeStats.nominalCounts[i]){
+                        maxIndex = i;
+                    }
+                }
+                // Replace missing value with max index
+                Enumeration instEnumerate = data.enumerateInstances();
+                while(instEnumerate.hasMoreElements()){
+                    Instance instance = (Instance)instEnumerate.nextElement();
+                    if(instance.isMissing(attr.index())){
+                        instance.setValue(attr.index(),maxIndex);
+                }
+}
             }
         }
         makeMyC45Tree(data);
@@ -151,6 +186,7 @@ public class MyC45 extends Classifier {
             }
         }
         // TODO: prune
+        //pruneTree(data);
     }
     
     public double[] listClassCountsValues(Instances data) throws Exception {
@@ -339,5 +375,46 @@ public class MyC45 extends Classifier {
 
     private double getThreshold(Attribute attr) {
         return Double.parseDouble(attr.value(0).replace("<=", ""));
+    }
+    
+    public boolean checkInstance (Instance instance) {
+        double cv = instance.classValue();
+        return isDoubleEqual(cv, classifyInstance(instance));
+    }
+    
+    public double countError (Instances instances) {
+        int ctrFalse = 0;
+        int ctr = 0;
+        Enumeration enumeration = instances.enumerateInstances();
+        while (enumeration.hasMoreElements()) {
+            Instance instance = (Instance) enumeration.nextElement();
+            if (!checkInstance(instance)) {
+                ctrFalse++;
+            }
+            ctr++;
+        }
+        return (double) ctrFalse/ (double) (ctr);
+    }
+    
+    
+    
+    public void pruneTree(Instances data) throws Exception {
+        
+        //Pruning jika successor != 0
+        if (successors != null) {
+            for (int i = 0; i < successors.length; i++) {
+                double error = countError(data);
+        
+                MyC45 temp = this.successors[i]; //save children
+                this.successors[i] = null; //pruning
+                double prunedError = countError(data);
+
+                if (error < prunedError) {
+                    //Cancel Pruning
+                    this.successors[i] = temp;
+                }
+            }
+        }
+        
     }
 }

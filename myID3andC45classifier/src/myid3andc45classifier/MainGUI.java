@@ -24,12 +24,9 @@ public class MainGUI extends Application
     {
         // Create the FXMLLoader
         FXMLLoader loader = new FXMLLoader();
-        // Path to the FXML File
-        String fxmlDocPath = "C:/Users/Julio Savigny/Documents/myID3andC45classifier/myID3andC45classifier/src/myid3andc45classifier/View/myID3C45.fxml";
-        FileInputStream fxmlStream = new FileInputStream(fxmlDocPath);
 
         // Create the Pane and all Details
-        TabPane root = (TabPane) loader.load(fxmlStream);
+        TabPane root = (TabPane) loader.load(MainGUI.class.getResource("View/myID3C45.fxml"));
 
         // Create the Scene
         Scene scene = new Scene(root);
