@@ -139,6 +139,11 @@ public class MyC45 extends Classifier {
             classAttribute = data.classAttribute();
         } else {
             Instances[] splitData = splitInstancesByAttribute(data, attribute);
+            Instances[] distrData = splitInstancesByAttribute(data, data.classAttribute());
+            distribution = new double[distrData.length];
+            for (int j = 0; j < distribution.length; j++) {
+                distribution[j] = distrData[j].numInstances();
+            }
             successors = new MyC45[attribute.numValues()];
             for (int j = 0; j < attribute.numValues(); j++) {
                 successors[j] = new MyC45();
