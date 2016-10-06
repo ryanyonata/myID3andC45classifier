@@ -349,12 +349,10 @@ public class MyC45 extends Classifier {
         Enumeration enumeration = instances.enumerateInstances();
         while (enumeration.hasMoreElements()) {
             Instance instance = (Instance) enumeration.nextElement();
-            if (checkInstance(instance)) {
-                ctr++;
-            } else  {
+            if (!checkInstance(instance)) {
                 ctrFalse++;
-                ctr++;
             }
+            ctr++;
         }
         return (double) ctrFalse/ (double) (ctr);
     }
