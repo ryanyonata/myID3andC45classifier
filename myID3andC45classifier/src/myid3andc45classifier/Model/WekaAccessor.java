@@ -80,11 +80,13 @@ public class WekaAccessor {
     public Evaluation percentageSplit(Instances dataset, Classifier cls, double percentage) throws Exception {
         Instances instances = new Instances(dataset);
         instances.randomize(new Random(1));
-
+        System.out.println(percentage);
         int trainSize = (int) Math.round(instances.numInstances() * percentage / 100);
         int testSize = instances.numInstances() - trainSize;
         Instances train = new Instances(instances, 0, trainSize);
         Instances test = new Instances(instances, trainSize, testSize);
+
+        cls.buildClassifier(train);
 
         Evaluation eval = new Evaluation(train);
         eval.evaluateModel(cls, test);
