@@ -173,6 +173,7 @@ public class MyC45 extends Classifier {
             label = maxIndex(numClasses);
             classAttribute = data.classAttribute();
         } else {
+            classAttribute = data.classAttribute();
             Instances[] splitData = splitInstancesByAttribute(data, attribute);
             Instances[] distrData = splitInstancesByAttribute(data, data.classAttribute());
             distribution = new double[distrData.length];
@@ -402,22 +403,32 @@ public class MyC45 extends Classifier {
         
         //Pruning jika successor != 0
         if (successors != null) {
+            MyC45 temp [] = new MyC45[successors.length];
             double error = countError(data);
             for (int i = 0; i < successors.length; i++) {
         
-                MyC45 temp = this.successors[i]; //save children
-                Attribute tempA = attribute;
-                attribute = null;
+                temp[i] = this.successors[i]; //save children
                 this.successors[i] = null; //pruning
                 this.label = (double) maxDistribution();
-                double prunedError = countError(data);
+                
 
-                if (error < prunedError) {
-                    //Cancel Pruning
-                    this.successors[i] = temp;
-                    attribute = tempA;
-                }
             }
+            Attribute tempA = attribute;
+            attribute = null;
+            double prunedError = countError(data);
+            if (error < prunedError) {
+                //Cancel Pruning
+                label = Double.NaN;
+                for (int i = 0; i < successors.length; i++) {
+        
+                    this.successors[i] = temp[i];
+                }
+                attribute = tempA;
+            } else {
+                System.out.println("Pruned");
+            }
+                
+            
         }
         
     }
